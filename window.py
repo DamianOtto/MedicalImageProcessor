@@ -1,4 +1,5 @@
 from tkinter import *
+import cv2
 from PIL import Image, ImageTk
 import SimpleITK
 import matplotlib.pyplot as plt
@@ -8,7 +9,6 @@ import math
 
 filenameT1 = "VSD.Brain.XX.O.MR_Flair.36607.mha"
 filenameT2 = "VSD.Brain.XX.O.MR_T1.36608.mha"
-value = 0
 idxSlice = 20
 labelGrayMatter = 1
 
@@ -23,25 +23,46 @@ def decreaseSlice():
     idxSlice -= 1
     print(idxSlice)
     labelSlice.configure(text=idxSlice)
+def countCirciulatyC1(nda):
+    thresh = threshold_mean(nda)
+    binary = nda > thresh
+    count = np.array(binary)
+    a = np.count_nonzero(count==True)
+    value = 2*math.sqrt(a/math.pi)
+    labelFirstValue.configure(text=value)
+    #plt.imshow(count)
+    #plt.show()
 
+def countCirciulatyC2(nda):
+    thresh = threshold_mean(nda)
+    binary = nda > thresh
+    count = np.array(binary)
+    xaxis = count.shape[0] ## x axis
+    yaxis = count.shape[1] ## x axis
+    kernel = np.ones((5,5), np.uint8)
+    bin_erosion = cv2.erode(binary, kernel,iterations=1)
+    circuit = bin - bin_erosion
+    #for x in range(2,xaxis):
+     #   for y in range(2,yaxis):
+      #      if()
+
+    print(xaxis, yaxis)
+    a = np.count_nonzero(count == True)
+    value = 2 * math.sqrt(a / math.pi)
+    labelFirstValue.configure(text=value)
 
 def sitk_show(img, title=None, margin=0.0, dpi=40):
     nda = SimpleITK.GetArrayFromImage(img)
-    thresh = threshold_mean(nda)
-    binary = nda > thresh
-    count = np.array(binary);
-    a = np.count_nonzero(count == True)
-    value = 2*math.sqrt(a/math.pi)
-    labelFirstValue.configure(text = value)
+    countCirciulatyC1(nda)
     plt.imsave('aaa.jpeg', nda, cmap=plt.cm.gray)
     img2 = ImageTk.PhotoImage(Image.open('aaa.jpeg'))
     label.configure(image=img2)
     label.image = img2
-    fig = plt.figure()
-    ax = fig.add_axes([margin, margin, 1 - 2 * margin, 1 - 2 * margin])
+   # fig = plt.figure()
+  #  ax = fig.add_axes([margin, margin, 1 - 2 * margin, 1 - 2 * margin])
     #plt.set_cmap("gray")
-    ax.imshow(binary, interpolation=None)
-    plt.show()
+#    ax.imshow(binary, interpolation=None)
+ #   plt.show()
 
 def showImg():
     imgT1Original = SimpleITK.ReadImage(filenameT1)
@@ -64,7 +85,7 @@ label.pack(side="bottom", fill="both", expand="yes")
 labelSlice = Label(topFrame,text = "Slice number:" + str(idxSlice))
 labelSlice.pack()
 
-labelFirstValue = Label(topFrame, text=str(value))
+labelFirstValue = Label(topFrame, text="C1")
 labelFirstValue.pack()
 
 button = Button(topFrame, text="ShowIm",command = showImg)
