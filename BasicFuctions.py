@@ -6,13 +6,18 @@ import matplotlib.pyplot as plt
 import os
 import cv2
 import numpy as np
+
+
+
 refPt = []
+roi = []
 idxSlice = 1
 def ImageShow():
     imgT1Original = SimpleITK.ReadImage(path)
     print(imgT1Original.GetSize())
     spacing = np.array(list(reversed(imgT1Original.GetSpacing())))
     nda = SimpleITK.GetArrayFromImage(SimpleITK.Tile(imgT1Original[:, :, idxSlice]));
+    print(nda)
     plt.imsave('aaa.jpeg', nda, cmap=plt.cm.gray);
     #photo = ImageTk.PhotoImage(Image.open('aaa.jpeg'));
     return ImageTk.PhotoImage(Image.open('aaa.jpeg'));
@@ -62,6 +67,7 @@ def callbackX1Y1(event):
 
 def callbackX2Y2(event):
     global refPt
+    global roi
     topFrame.focus_set()
     print("clicked at", event.x, event.y)
     refPt.append((event.x, event.y))
@@ -88,6 +94,8 @@ label.bind("<ButtonRelease-1>", callbackX2Y2)
 labelSlice = Label(topFrame,text = "Slice number: " + str(idxSlice))
 buttonInc = Button(topFrame, text="Next slice",command=increaseSlice)
 buttonDec = Button(topFrame, text="Previous slice",command=decreaseSlice)
+#buttonAnalize = Button(topFrame, text="Analize",command=analize)
+
 
 
 root.mainloop()
